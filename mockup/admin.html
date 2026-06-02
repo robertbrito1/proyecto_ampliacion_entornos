@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&J - Admin Reservas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Diseño Responsive */
+        /* Paleta de colores: Fondo oscuro y detalles dorados */
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Playfair Display', serif; /* Tipografía elegante */
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* Título de lujo */
+        .brand-title {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #d4af37; /* Color Oro */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 0;
+            letter-spacing: 2px;
+        }
+
+        .brand-subtitle {
+            color: #ffffff;
+            font-style: italic;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+        
+        .badge-admin {
+            background: #dc3545;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            vertical-align: super;
+            box-shadow: 0 0 10px rgba(220,53,69,0.5);
+            font-family: 'Poppins', sans-serif;
+            color: white;
+        }
+
+        /* Botón de zona activa */
+        .btn-zona-activa {
+            background-color: #d4af37 !important;
+            color: black !important;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            transition: 0.3s;
+        }
+
+        /* Botón de zona inactiva */
+        .btn-zona-link {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-zona-link:hover {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+        }
+
+        /* Mapa con efecto cristalizado */
+        .container-glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        /* Contenedor del Mapa: Se adapta al ancho de pantalla */
+        .restaurante-mapa {
+            display: grid;
+            /* En móviles: 2 columnas. En pantallas grandes: auto-fit */
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Estilo de la Mesa (Círculo elegante) */
+        .mesa-container {
+            aspect-ratio: 1 / 1; /* Hace que sean siempre simétricas */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%; /* Mesas redondas */
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            user-select: none; /* Evita que se seleccione el texto al tocar */
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .mesa-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .mesa-libre {
+            background: rgba(40, 167, 69, 0.2) !important;
+            border-color: #28a745 !important;
+            color: #fff;
+        }
+
+        .mesa-ocupada {
+            background: rgba(220, 53, 69, 0.4) !important;
+            border-color: #dc3545 !important;
+            color: #fff;
+        }
+
+        .mesa-numero {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .mesa-estado {
+            font-size: 0.9rem;
+            font-family: 'Poppins', sans-serif;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        /* Estilo para la mesa cuando está seleccionada */
+        .mesa-seleccionada-temp {
+            background: #d4af37 !important; /* Color oro para resaltar */
+            border-color: #ffffff !important;
+            color: #000000 !important;
+            transform: scale(1.1); /* Se hace un poquito más grande */
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.8) !important;
+            z-index: 10;
+        }
+
+        .mesa-seleccionada-temp .mesa-numero {
+            font-weight: bold;
+        }
+        
+        /* Estilo para mesas que pertenecen a un grupo */
+        .mesa-en-conjunto {
+            border: 4px dashed #ff0000 !important; /* Rojo discontinuo */
+            background: linear-gradient(45deg, #ffffff 25%, #ff0000 25%, #ff0000 50%, #ffffff 50%, #ffffff 75%, #ff0000 75%, #ff0000 100%) !important;
+            background-size: 20px 20px !important; /* Efecto de rayas rojas y blancas */
+            color: black !important;
+            font-weight: bold;
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+
+        /* Ajustes para Pantallas Pequeñas (Móviles) */
+        @media (max-width: 600px) {
+            .brand-title {
+                font-size: 2.5rem; /* Título más pequeño en móvil */
+            }
+            
+            .restaurante-mapa {
+                grid-template-columns: repeat(2, 1fr); /* 2 mesas por fila en móvil */
+                gap: 15px;
+            }
+
+            .mesa-numero {
+                font-size: 1.5rem;
+            }
+
+            .btn-reservar-flotante {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                border-radius: 50px;
+                padding: 15px 25px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+                z-index: 1000;
+            }
+        }
+
+        /* Modal styling */
+        .modal-content {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 15px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+
+        .form-control {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .form-control:focus {
+            background: rgba(255,255,255,0.1);
+            border-color: #d4af37;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+        
+        .btn-confirmar {
+            background: #d4af37;
+            color: #000;
+            font-weight: bold;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-confirmar:hover {
+            background: #b5952f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+        }
+        
+        ::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container container-glass text-center">
+        <h1 class="brand-title">M&J <span class="badge-admin">ADMIN</span></h1>
+        <p class="brand-subtitle" id="ubicacion-titulo">Experiencia Gastronómica - Salón</p>
+        
+        <div id="btn-reserva-multiple" class="d-none mb-4 mt-3" style="font-family: 'Poppins', sans-serif;">
+            <button class="btn btn-zona-activa btn-lg w-100 shadow-lg fw-bold" onclick="abrirReservaGrupo()">
+                ✅ RESERVAR GRUPO: <span id="lista-mesas-seleccionadas"></span>
+            </button>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 mt-4 mb-4" style="font-family: 'Poppins', sans-serif;">
+            <button class="btn btn-zona-activa" id="btn-salon" onclick="cambiarUbicacion('Salon')">🏠 SALÓN</button>
+            <button class="btn btn-zona-link" id="btn-terraza" onclick="cambiarUbicacion('Terraza')">🌳 TERRAZA</button>
+        </div>
+
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-6 col-lg-5">
+                <div class="d-flex justify-content-between align-items-center gap-3" style="font-family: 'Poppins', sans-serif;">
+                    <input type="date" class="form-control" id="fecha_filtro">
+                    <div class="btn-group w-100">
+                        <button class="btn btn-outline-light active">☀️ Día</button>
+                        <button class="btn btn-outline-light">🌙 Noche</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="restaurante-mapa" id="mapa-mesas">
+            <!-- Mesas generadas por JS -->
+        </div>
+
+        <div class="mt-5 mb-3" style="font-family: 'Poppins', sans-serif;">
+            <button class="btn btn-danger shadow px-4 py-2 fw-bold rounded-pill">📥 Descargar Reporte PDF</button>
+        </div>
+    </div>
+
+    <!-- Modal Reserva (Libre) -->
+    <div class="modal fade" id="modalReserva" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-warning" style="font-family: 'Playfair Display', serif;">Reserva - Mesas: <span id="label_mesa"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-reserva" onsubmit="confirmarReserva(event)">
+                        <div class="row g-3 mb-3">
+                            <div class="col-6"><input type="text" id="res_nombre" class="form-control" placeholder="Nombre" required></div>
+                            <div class="col-6"><input type="text" id="res_apellido" class="form-control" placeholder="Apellido" required></div>
+                        </div>
+                        <input type="tel" id="res_tel" class="form-control mb-3" placeholder="Teléfono" required>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="small text-muted mb-1">Personas</label>
+                                <input type="number" id="res_pax" class="form-control" value="2" min="1" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted mb-1">Hora</label>
+                                <input type="time" id="res_hora" class="form-control" required>
+                            </div>
+                        </div>
+                        <textarea id="res_notas" class="form-control mb-4" rows="2" placeholder="Comentarios especiales (opcional)..."></textarea>
+                        <input type="hidden" id="input_mesa_numero">
+                        <button type="submit" class="btn btn-confirmar w-100 py-2 rounded-3">Confirmar Reserva</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalle (Ocupada) -->
+    <div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg" style="border: 1px solid #dc3545;">
+                <div class="modal-header bg-danger text-white border-0">
+                    <h5 class="modal-title fw-bold" style="font-family: 'Playfair Display', serif;">📝 Detalle - Mesa <span id="det_mesa_id"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <form id="form_editar" onsubmit="guardarEdicion(event)">
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="small fw-bold text-muted">Nombre</label>
+                                <input type="text" id="edit_nombre" class="form-control" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold text-muted">Apellido</label>
+                                <input type="text" id="edit_apellido" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="small fw-bold text-muted">Teléfono</label>
+                            <input type="tel" id="edit_tel" class="form-control" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="small fw-bold text-muted">Pax</label>
+                                <input type="number" id="edit_pax" class="form-control" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold text-muted">Hora</label>
+                                <input type="time" id="edit_hora" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="small fw-bold text-muted">Comentarios</label>
+                            <textarea id="edit_coment" class="form-control" rows="2"></textarea>
+                        </div>
+                        
+                        <input type="hidden" id="edit_mesa_id">
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-zona-activa py-2 rounded-3">💾 Guardar Cambios</button>
+                            <button type="button" class="btn btn-outline-danger py-2 rounded-3" onclick="liberarMesa()">🗑️ Eliminar Reserva</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('fecha_filtro').valueAsDate = new Date();
+
+        const datosMesas = {
+            'Salon': [
+                { id: 'S1', ocupada: false, conjunto: false },
+                { id: 'S2', ocupada: true, nombre: 'Juan', apellido: 'Pérez', tel: '555-1234', pax: 4, hora: '14:00', coment: 'Alergia al gluten', conjunto: false },
+                { id: 'S3', ocupada: false, conjunto: false },
+                { id: 'S4', ocupada: true, nombre: 'Ana', apellido: 'Gómez', tel: '555-5678', pax: 2, hora: '14:30', coment: 'Aniversario', conjunto: true },
+                { id: 'S5', ocupada: true, nombre: 'Ana', apellido: 'Gómez', tel: '555-5678', pax: 2, hora: '14:30', coment: 'Aniversario', conjunto: true },
+                { id: 'S6', ocupada: false, conjunto: false },
+                { id: 'S7', ocupada: true, nombre: 'Carlos', apellido: 'Ruiz', tel: '555-9012', pax: 6, hora: '13:00', coment: 'Silla de bebé', conjunto: false },
+                { id: 'S8', ocupada: false, conjunto: false }
+            ],
+            'Terraza': [
+                { id: 'T1', ocupada: false, conjunto: false },
+                { id: 'T2', ocupada: false, conjunto: false },
+                { id: 'T3', ocupada: true, nombre: 'María', apellido: 'López', tel: '555-3456', pax: 3, hora: '13:30', coment: '', conjunto: false },
+                { id: 'T4', ocupada: true, nombre: 'Pedro', apellido: 'Díaz', tel: '555-7890', pax: 5, hora: '15:00', coment: 'Cumpleaños', conjunto: false },
+                { id: 'T5', ocupada: false, conjunto: false },
+                { id: 'T6', ocupada: false, conjunto: false }
+            ]
+        };
+
+        let ubicacionActual = 'Salon';
+        let seleccionadas = [];
+        let modalReserva = new bootstrap.Modal(document.getElementById('modalReserva'));
+        let modalDetalle = new bootstrap.Modal(document.getElementById('modalDetalle'));
+
+        function renderizarMesas() {
+            const mapa = document.getElementById('mapa-mesas');
+            mapa.innerHTML = '';
+            seleccionadas = [];
+            actualizarBotonMultiple();
+            
+            const mesas = datosMesas[ubicacionActual];
+            
+            mesas.forEach(mesa => {
+                const div = document.createElement('div');
+                div.id = 'mesa-' + mesa.id;
+                
+                let clases = 'mesa-container ';
+                if (mesa.ocupada) {
+                    clases += 'mesa-ocupada ';
+                    if (mesa.conjunto) clases += 'mesa-en-conjunto ';
+                    div.className = clases;
+                    
+                    div.innerHTML = `
+                        <span class="mesa-numero">${mesa.id}</span>
+                        <span class="mesa-estado fw-bold">${mesa.nombre}<br>${mesa.pax}P (${mesa.hora})</span>
+                    `;
+                    div.onclick = () => abrirDetalle(mesa);
+                } else {
+                    clases += 'mesa-libre ';
+                    div.className = clases;
+                    
+                    div.innerHTML = `
+                        <span class="mesa-numero">${mesa.id}</span>
+                        <span class="mesa-estado">Libre</span>
+                    `;
+                    div.onclick = () => toggleMesa(mesa.id);
+                }
+                
+                mapa.appendChild(div);
+            });
+        }
+
+        function cambiarUbicacion(ubicacion) {
+            ubicacionActual = ubicacion;
+            document.getElementById('ubicacion-titulo').innerText = `Experiencia Gastronómica - ${ubicacion}`;
+            
+            if (ubicacion === 'Salon') {
+                document.getElementById('btn-salon').className = 'btn btn-zona-activa';
+                document.getElementById('btn-terraza').className = 'btn btn-zona-link';
+            } else {
+                document.getElementById('btn-salon').className = 'btn btn-zona-link';
+                document.getElementById('btn-terraza').className = 'btn btn-zona-activa';
+            }
+            
+            renderizarMesas();
+        }
+
+        function toggleMesa(id) {
+            const idx = seleccionadas.indexOf(id);
+            const el = document.getElementById('mesa-' + id);
+            
+            if (idx > -1) { 
+                seleccionadas.splice(idx, 1); 
+                el.classList.remove('mesa-seleccionada-temp'); 
+            } else { 
+                seleccionadas.push(id); 
+                el.classList.add('mesa-seleccionada-temp'); 
+            }
+            actualizarBotonMultiple();
+        }
+
+        function actualizarBotonMultiple() {
+            const btn = document.getElementById('btn-reserva-multiple');
+            btn.classList.toggle('d-none', seleccionadas.length === 0);
+            document.getElementById('lista-mesas-seleccionadas').innerText = seleccionadas.join(', ');
+        }
+
+        function abrirReservaGrupo() {
+            document.getElementById('label_mesa').innerText = seleccionadas.join(', ');
+            document.getElementById('input_mesa_numero').value = seleccionadas.join(',');
+            document.getElementById('form-reserva').reset();
+            modalReserva.show();
+        }
+
+        function abrirDetalle(mesa) {
+            document.getElementById('det_mesa_id').innerText = mesa.id;
+            document.getElementById('edit_mesa_id').value = mesa.id;
+            
+            document.getElementById('edit_nombre').value = mesa.nombre;
+            document.getElementById('edit_apellido').value = mesa.apellido;
+            document.getElementById('edit_tel').value = mesa.tel;
+            document.getElementById('edit_hora').value = mesa.hora;
+            document.getElementById('edit_pax').value = mesa.pax;
+            document.getElementById('edit_coment').value = mesa.coment;
+            
+            modalDetalle.show();
+        }
+
+        function confirmarReserva(e) {
+            e.preventDefault();
+            const idsMesas = document.getElementById('input_mesa_numero').value.split(',');
+            const nombre = document.getElementById('res_nombre').value;
+            const apellido = document.getElementById('res_apellido').value;
+            const tel = document.getElementById('res_tel').value;
+            const pax = document.getElementById('res_pax').value;
+            const hora = document.getElementById('res_hora').value;
+            const notas = document.getElementById('res_notas').value;
+            
+            const esConjunto = idsMesas.length > 1;
+
+            idsMesas.forEach(idMesa => {
+                const mesa = datosMesas[ubicacionActual].find(m => m.id === idMesa.trim());
+                if(mesa) {
+                    mesa.ocupada = true;
+                    mesa.conjunto = esConjunto;
+                    mesa.nombre = nombre;
+                    mesa.apellido = apellido;
+                    mesa.tel = tel;
+                    mesa.pax = pax;
+                    mesa.hora = hora;
+                    mesa.coment = notas;
+                }
+            });
+            
+            modalReserva.hide();
+            renderizarMesas();
+            alert('¡Reserva creada exitosamente!');
+        }
+
+        function guardarEdicion(e) {
+            e.preventDefault();
+            const idMesa = document.getElementById('edit_mesa_id').value;
+            const mesa = datosMesas[ubicacionActual].find(m => m.id === idMesa);
+            
+            if(mesa) {
+                mesa.nombre = document.getElementById('edit_nombre').value;
+                mesa.apellido = document.getElementById('edit_apellido').value;
+                mesa.tel = document.getElementById('edit_tel').value;
+                mesa.pax = document.getElementById('edit_pax').value;
+                mesa.hora = document.getElementById('edit_hora').value;
+                mesa.coment = document.getElementById('edit_coment').value;
+            }
+            
+            modalDetalle.hide();
+            renderizarMesas();
+        }
+
+        function liberarMesa() {
+            if(confirm('¿Estás seguro de que deseas eliminar esta reserva y liberar la mesa?')) {
+                const idMesa = document.getElementById('edit_mesa_id').value;
+                const mesa = datosMesas[ubicacionActual].find(m => m.id === idMesa);
+                if(mesa) {
+                    // Si era conjunto, liberar solo esta o todas? Para mockup liberamos solo esta.
+                    mesa.ocupada = false;
+                    mesa.conjunto = false;
+                    mesa.nombre = '';
+                    mesa.apellido = '';
+                    mesa.tel = '';
+                    mesa.pax = 0;
+                    mesa.hora = '';
+                    mesa.coment = '';
+                }
+                modalDetalle.hide();
+                renderizarMesas();
+            }
+        }
+
+        // Inicializar
+        renderizarMesas();
+    </script>
+</body>
+</html>
