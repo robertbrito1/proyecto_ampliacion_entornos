@@ -1,3 +1,7 @@
+
+presentacion https://canva.link/u0g2ej0c822yxl2
+
+
 Resumen
 Este proyecto surge ante la necesidad de ofrecer una alternativa eficiente y accesible en el sector de la hostelería, donde las soluciones actuales, como CoverManager o TheFork, presentan barreras económicas o un exceso de complejidad técnica que dificulta la gestión en restaurantes pequeños o emergentes. El objetivo principal es el desarrollo de una aplicación de reservas diseñada bajo una filosofía de simplicidad y agilidad, permitiendo a los usuarios centrarse exclusivamente en la gestión eficiente de su negocio.
 El sistema se estructura en torno a dos perfiles de usuario claramente diferenciados: el cliente, con un acceso directo y sin fricciones para realizar sus reservas; y el administrador, quien dispone de un panel seguro para la gestión integral de las mismas. A través del análisis funcional y el modelado de casos de uso, se han implementado funcionalidades clave como el control de duplicados, asegurando la integridad de las reservas, y herramientas de administración directa que permiten modificar, eliminar y exportar reportes en formato PDF.
